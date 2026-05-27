@@ -36,7 +36,6 @@ int parse4Bit(String bin) {
 
 // Retorna uma string binária formatada em 4 bits para enviar ao front-end
 String formatarBinario(int val) {
-    val = val & 0x0F; // Garante 4 bits
     String bin = "";
     for(int i = 3; i >= 0; i--) {
         bin += ((val >> i) & 0x01) ? "1" : "0";
