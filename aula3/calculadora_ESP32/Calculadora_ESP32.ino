@@ -16,15 +16,15 @@ void setup() {
     Serial.println(WiFi.softAPIP());
 
     // Rota raiz: Envia a interface HTML
-    server.on("/", []() {
+    server.on("/", HTTP_GET, []() {
         server.send(200, "text/html", HTML_INTERFACE);
     });
 
     // Rota da API de cálculo
-    server.on("/calc", processarCalculo);
+    server.on("/calc", HTTP_GET, processarCalculo);
 
     server.begin();
-    Serial.println("Servidor HTTP rodando.");
+    Serial.println("Servidor HTTP rodando na porta 80.");
 }
 
 void loop() {
@@ -37,19 +37,18 @@ void processarCalculo() {
     String paramB = server.arg("b");
     String op = server.arg("op");
 
-    // 2. Transforma strings binárias em inteiros reais (C nativo)
+    // 2. Transforma strings binárias em inteiros com sinal (C nativo)
     int valA = parse4Bit(paramA);
     int valB = parse4Bit(paramB);
     
     // 3. Processamento Matemático
-    int resultado = (op == "add") ? (valA + valB) : (valA - valB); //
+    int resultado = (op == "add") ? (valA + valB) : (valA - valB);
     
-    // 4. Detecção de Overflow
-    // Em complemento de dois de 4 bits, o intervalo válido é -8 a +7
+    // 4. Detecção de Overflow (Limites: -8 a +7)
     bool overflow = (resultado > 7 || resultado < -8); 
 
     // 5. Mascaramento e Saída de Hardware
-    int resultadoMascarado = resultado & 0x0F; //
+    int resultadoMascarado = resultado & 0x0F;
     atualizarLEDs(resultadoMascarado);
 
     // 6. Monta a resposta JSON para devolver ao navegador
