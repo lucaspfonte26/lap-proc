@@ -35,6 +35,16 @@ int parse4Bit(String bin) {
     return val;
 }
 
+// Multiplicação de 4 bits por somas repetidas (mantém o sinal dos operandos)
+int multiply(int a, int b) {
+    int resultado = 0;
+    int passos = (b < 0) ? -b : b;
+    for (int i = 0; i < passos; i++) {
+        resultado += a;
+    }
+    return (b < 0) ? -resultado : resultado;
+}
+
 // Converte um inteiro para String binária de 4 bits exatos
 String formatarBinario(int val) {
     String bin = "";

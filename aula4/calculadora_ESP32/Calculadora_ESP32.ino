@@ -41,11 +41,31 @@ void processarCalculo() {
     int valA = parse4Bit(paramA);
     int valB = parse4Bit(paramB);
     
-    // 3. Processamento Matemático
-    int resultado = (op == "add") ? (valA + valB) : (valA - valB);
-    
+    // 3. Processamento Matemático (dispatch por operação)
+    int resultado = 0;
+    bool implementado = true;
+
+    if (op == "add") {
+        resultado = valA + valB;
+    } else if (op == "sub") {
+        resultado = valA - valB;
+    } else if (op == "mul") {
+        resultado = multiply(valA, valB);
+    } else if (op == "fat") {
+        implementado = false; // unária (ignora B); TODO: factorial(valA)
+    } else if (op == "div") {
+        implementado = false; // TODO: divide(valA, valB)
+    } else {
+        implementado = false;
+    }
+
+    if (!implementado) {
+        server.send(200, "application/json", "{\"erro\":\"operacao nao implementada\"}");
+        return;
+    }
+
     // 4. Detecção de Overflow (Limites: -8 a +7)
-    bool overflow = (resultado > 7 || resultado < -8); 
+    bool overflow = (resultado > 7 || resultado < -8);
 
     // 5. Mascaramento e Saída de Hardware
     int resultadoMascarado = resultado & 0x0F;
