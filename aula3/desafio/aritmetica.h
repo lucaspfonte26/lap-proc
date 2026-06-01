@@ -2,7 +2,7 @@
 #define LED_BIT0 19 // LSB
 #define LED_BIT1 18
 #define LED_BIT2 5
-#define LED_BIT3 17 // MSB / bit de sinal
+#define LED_BIT3 7 // MSB / bit de sinal
 
 void inicializarHardware() {
     pinMode(LED_BIT0, OUTPUT);

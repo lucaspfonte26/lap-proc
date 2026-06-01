@@ -2,7 +2,7 @@
 #define LED_BIT0 19 // Bit menos significativo (LSB)
 #define LED_BIT1 18
 #define LED_BIT2 5
-#define LED_BIT3 17 // Bit mais significativo (Sinal/MSB)
+#define LED_BIT3 7 // Bit mais significativo (Sinal/MSB)
 
 void inicializarHardware() {
     pinMode(LED_BIT0, OUTPUT);
@@ -11,10 +11,10 @@ void inicializarHardware() {
     pinMode(LED_BIT3, OUTPUT);
     
     // Teste inicial (Blink rápido) para confirmar inicialização do sistema
-    digitalWrite(LED_BIT0, HIGH); delay(100); digitalWrite(LED_BIT0, LOW);
-    digitalWrite(LED_BIT1, HIGH); delay(100); digitalWrite(LED_BIT1, LOW);
-    digitalWrite(LED_BIT2, HIGH); delay(100); digitalWrite(LED_BIT2, LOW);
-    digitalWrite(LED_BIT3, HIGH); delay(100); digitalWrite(LED_BIT3, LOW);
+    digitalWrite(LED_BIT0, HIGH); delay(1000); digitalWrite(LED_BIT0, LOW);
+    digitalWrite(LED_BIT1, HIGH); delay(1000); digitalWrite(LED_BIT1, LOW);
+    digitalWrite(LED_BIT2, HIGH); delay(1000); digitalWrite(LED_BIT2, LOW);
+    digitalWrite(LED_BIT3, HIGH); delay(1000); digitalWrite(LED_BIT3, LOW);
 }
 
 // Direciona o resultado truncado para os pinos físicos

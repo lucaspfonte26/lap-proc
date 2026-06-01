@@ -10,8 +10,8 @@ void setup() {
     inicializarHardware();
 
     // Setup Webserver (WiFi Hotspot AP) sem internet
-    WiFi.softAP("Calculadora_ESP32"); 
-    Serial.println("Access Point Iniciado. SSID: Calculadora_ESP32");
+    WiFi.softAP("Calculadora_ESP32_Fialho"); 
+    Serial.println("Access Point Iniciado. SSID: Calculadora_ESP32_Fialho");
     Serial.print("Endereço IP: ");
     Serial.println(WiFi.softAPIP());
 
