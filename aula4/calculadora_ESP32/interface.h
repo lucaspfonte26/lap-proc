@@ -56,9 +56,9 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             box-shadow: 0 0 8px rgba(0, 58, 112, 0.3);
             outline: none; 
         }
-        .btn-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .btn-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 25px; }
         button { 
-            flex: 1;
+            flex: 1 1 120px;
             padding: 15px; 
             font-size: 18px; 
             font-weight: bold;
@@ -147,8 +147,11 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
         </div>
         
         <div class="btn-group">
-            <button id="btnSoma" onclick="calcular('add')">SOMAR</button>
-            <button id="btnSub" onclick="calcular('sub')">SUBTRAIR</button>
+            <button id="btnSoma" onclick="calcular('add', this)">SOMAR</button>
+            <button id="btnSub" onclick="calcular('sub', this)">SUBTRAIR</button>
+            <button id="btnMul" onclick="calcular('mul', this)">MULTIPLICAR</button>
+            <button id="btnFat" onclick="calcular('fat', this)">FATORIAL</button>
+            <button id="btnDiv" onclick="calcular('div', this)">DIVIDIR</button>
         </div>
         
         <div id="resultadoBox" class="feedback-box success-box">
@@ -180,43 +183,42 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
         let historicoCalculos = [];
 
         // --- 2. Função principal de cálculo ---
-        function calcular(operacao) {
+        function calcular(operacao, botao) {
             const opA = document.getElementById('opA');
             const opB = document.getElementById('opB');
             const a = opA.value;
             const b = opB.value;
-            
-            const btnSoma = document.getElementById('btnSoma');
-            const btnSub = document.getElementById('btnSub');
 
-            // Validação de preenchimento completo
-            if(a.length !== 4 || b.length !== 4) {
-                alert("Preencha exatamente 4 bits (0s e 1s) em ambos os campos antes de calcular.");
+            const unaria = (operacao === 'fat'); // fatorial usa apenas A
+            if (a.length !== 4 || (!unaria && b.length !== 4)) {
+                alert("Preencha exatamente 4 bits (0s e 1s) nos campos necessários.");
                 return;
             }
 
-            // --- Ativa o Loading ---
-            btnSoma.disabled = true;
-            btnSub.disabled = true;
-            const txtOrigSoma = btnSoma.innerText;
-            const txtOrigSub = btnSub.innerText;
-            
-            if (operacao === 'add') btnSoma.innerText = 'Calculando...';
-            if (operacao === 'sub') btnSub.innerText = 'Calculando...';
+            const botoes = document.querySelectorAll('.btn-group button');
+            botoes.forEach(btn => btn.disabled = true);
+            const txtOrig = botao.innerText;
+            botao.innerText = 'Calculando...';
+
+            const restaurar = () => {
+                botoes.forEach(btn => btn.disabled = false);
+                botao.innerText = txtOrig;
+            };
 
             fetch(`/calc?a=${a}&b=${b}&op=${operacao}`)
                 .then(response => response.json())
                 .then(data => {
-                    // --- Desativa o Loading ---
-                    btnSoma.disabled = false;
-                    btnSub.disabled = false;
-                    btnSoma.innerText = txtOrigSoma;
-                    btnSub.innerText = txtOrigSub;
+                    restaurar();
+
+                    if (data.erro) {
+                        alert("Operação ainda não implementada.");
+                        return;
+                    }
 
                     const divAlerta = document.getElementById('alertaOverflow');
                     const divRes = document.getElementById('resultadoBox');
-                    
-                    if(data.overflow) {
+
+                    if (data.overflow) {
                         divAlerta.style.display = 'block';
                         divRes.style.display = 'none';
                     } else {
@@ -226,19 +228,14 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
                         divAlerta.style.display = 'none';
                     }
 
-                    // --- 3. Atualiza o Histórico ---
                     adicionarAoHistorico(a, b, operacao, data);
-                    
-                    // Limpa os campos para a próxima conta (Opcional, melhora a fluidez)
+
                     opA.value = '';
                     opB.value = '';
                     opA.focus();
                 })
                 .catch(error => {
-                    btnSoma.disabled = false;
-                    btnSub.disabled = false;
-                    btnSoma.innerText = txtOrigSoma;
-                    btnSub.innerText = txtOrigSub;
+                    restaurar();
                     console.error('Erro de comunicação com o ESP32:', error);
                     alert("Erro ao conectar com o ESP32. Verifique a rede Wi-Fi.");
                 });
@@ -246,7 +243,10 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
 
         // Função auxiliar para montar a lista do histórico
         function adicionarAoHistorico(a, b, operacao, data) {
-            const sinal = (operacao === 'add') ? '+' : '-';
+            let sinal = '-';
+            if (operacao === 'add') sinal = '+';
+            else if (operacao === 'mul') sinal = '×';
+            else if (operacao === 'div') sinal = '÷';
             let resultadoVisual;
 
             if (data.overflow) {
