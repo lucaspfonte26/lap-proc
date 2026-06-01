@@ -37,13 +37,20 @@ void processarCalculo() {
     String paramB = server.arg("b");
     String op = server.arg("op");
 
-    // 2. Transforma strings binárias em inteiros com sinal (C nativo)
-    int valA = parse4Bit(paramA);
-    int valB = parse4Bit(paramB);
+    // Identifica o tamanho do operando com base na quantidade de caracteres digitados
+    int tamanhoBits = paramA.length(); 
+
+    // 2. Transforma strings binárias em inteiros com sinal (C nativo e dinâmico)
+    int valA = parseBinarioDinamico(paramA);
+    int valB = parseBinarioDinamico(paramB);
     
-    // 3. Processamento Matemático (dispatch por operação)
+    // 3. Processamento Matemático e HARNESS DE TEMPO (Responsabilidade do Aluno C)
     int resultado = 0;
     bool implementado = true;
+    bool erroDivisao = false;
+
+    // Captura o timestamp inicial de alta precisão (em microssegundos)
+    int64_t tempoInicio = esp_timer_get_time();
 
     if (op == "add") {
         resultado = valA + valB;
@@ -52,30 +59,43 @@ void processarCalculo() {
     } else if (op == "mul") {
         resultado = multiply(valA, valB);
     } else if (op == "fat") {
-        implementado = false; // unária (ignora B); TODO: factorial(valA)
+        resultado = factorial(valA); // Integrado Aluno B (Ignora o operador B)
     } else if (op == "div") {
-        implementado = false; // TODO: divide(valA, valB)
+        resultado = divideSucessiva(valA, valB, erroDivisao); // Integrado Aluno C
     } else {
         implementado = false;
     }
 
+    // Captura o timestamp final imediatamente após o término do cálculo
+    int64_t tempoFim = esp_timer_get_time();
+    int64_t tempoExecucaoUs = tempoFim - tempoInicio; // Tempo decorrido em us
+
+    // Tratamento de Erros Críticos antes de enviar ao usuário
     if (!implementado) {
         server.send(200, "application/json", "{\"erro\":\"operacao nao implementada\"}");
         return;
     }
+    if (erroDivisao) {
+        server.send(200, "application/json", "{\"erro\":\"divisao por zero\"}");
+        return;
+    }
 
-    // 4. Detecção de Overflow (Limites: -8 a +7)
-    bool overflow = (resultado > 7 || resultado < -8);
+    // 4. Detecção de Overflow Dinâmica (Limites mudam conforme o número de bits)
+    int limiteMin = -(1 << (tamanhoBits - 1));
+    int limiteMax = (1 << (tamanhoBits - 1)) - 1;
+    bool overflow = (resultado > limiteMax || resultado < limiteMin);
 
     // 5. Mascaramento e Saída de Hardware
-    int resultadoMascarado = resultado & 0x0F;
-    atualizarLEDs(resultadoMascarado);
+    int mascaraBits = (1 << tamanhoBits) - 1;
+    int resultadoMascarado = resultado & mascaraBits;
+    atualizarLEDs(resultadoMascarado & 0x0F); // Garante segurança física enviando apenas os 4 pinos mapeados
 
-    // 6. Monta a resposta JSON para devolver ao navegador
+    // 6. Monta a resposta JSON incluindo a métrica de tempo para o Aluno C coletar
     String jsonResposta = "{";
     jsonResposta += "\"decimal\":" + String(resultado) + ",";
-    jsonResposta += "\"binario\":\"" + formatarBinario(resultadoMascarado) + "\",";
-    jsonResposta += "\"overflow\":" + String(overflow ? "true" : "false");
+    jsonResposta += "\"binario\":\"" + formatarBinarioDinamico(resultadoMascarado, tamanhoBits) + "\",";
+    jsonResposta += "\"overflow\":" + String(overflow ? "true" : "false") + ",";
+    jsonResposta += "\"tempo_us\":" + String((long)tempoExecucaoUs); // Métrica de desempenho enviada à Web
     jsonResposta += "}";
 
     server.send(200, "application/json", jsonResposta);

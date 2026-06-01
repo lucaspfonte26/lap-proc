@@ -16,6 +16,7 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             --danger: #dc3545;
             --success: #28a745;
             --text-main: #333333;
+            --time-color: #6c757d;
         }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -42,9 +43,9 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
         .input-group { margin-bottom: 25px; }
         input { 
             padding: 15px; 
-            font-size: 22px; 
+            font-size: 20px; 
             margin: 10px; 
-            width: 150px; 
+            width: 180px; 
             text-align: center;
             font-family: monospace;
             border: 2px solid #ccc;
@@ -60,7 +61,7 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
         button { 
             flex: 1 1 120px;
             padding: 15px; 
-            font-size: 18px; 
+            font-size: 16px; 
             font-weight: bold;
             cursor: pointer; 
             background-color: var(--poli-blue); 
@@ -74,7 +75,6 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             color: var(--poli-blue); 
             border-color: var(--poli-yellow);
         }
-        /* Estilo para o estado de "Loading" */
         button:disabled {
             background-color: #6c757d;
             border-color: #6c757d;
@@ -89,12 +89,21 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             font-size: 18px;
             display: none;
             animation: fadeIn 0.3s ease-in-out;
+            position: relative; /* Para posicionar o tempo de execução */
         }
         .success-box { background-color: #e8f5e9; border: 2px solid var(--success); color: #1b5e20; }
         .alert-box { background-color: #ffebee; border: 2px solid var(--danger); color: #b71c1c; font-weight: bold;}
         
         .result-highlight { font-family: monospace; font-size: 24px; font-weight: bold; color: var(--poli-blue); }
         
+        .execution-time {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--time-color);
+            font-style: italic;
+        }
+
         /* Estilos do Histórico */
         .history-box {
             margin-top: 25px;
@@ -125,9 +134,16 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             font-family: monospace;
             font-size: 16px;
             color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
         }
         .history-list li:last-child {
             border-bottom: none;
+        }
+        .history-time {
+            font-size: 12px;
+            color: var(--time-color);
+            align-self: flex-end;
         }
 
 
@@ -139,28 +155,30 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
 </head>
 <body>
     <div class="container">
-        <h2>Calculadora 4-Bits</h2>
+        <h2>Calculadora Dinâmica</h2>
         
         <div class="input-group">
-            <input type="text" id="opA" maxlength="4" placeholder="Op A" autocomplete="off">
-            <input type="text" id="opB" maxlength="4" placeholder="Op B" autocomplete="off">
+            <input type="text" id="opA" maxlength="16" placeholder="Op A (Binário)" autocomplete="off">
+            <input type="text" id="opB" maxlength="16" placeholder="Op B (Binário)" autocomplete="off">
         </div>
         
         <div class="btn-group">
             <button id="btnSoma" onclick="calcular('add', this)">SOMAR</button>
             <button id="btnSub" onclick="calcular('sub', this)">SUBTRAIR</button>
             <button id="btnMul" onclick="calcular('mul', this)">MULTIPLICAR</button>
-            <button id="btnFat" onclick="calcular('fat', this)">FATORIAL</button>
+            <button id="btnFat" onclick="calcular('fat', this)">FATORIAL (!)</button>
             <button id="btnDiv" onclick="calcular('div', this)">DIVIDIR</button>
         </div>
         
         <div id="resultadoBox" class="feedback-box success-box">
             Resultado (Dec): <span id="resDec" class="result-highlight"></span> <br>
             Resultado (Bin): <span id="resBin" class="result-highlight"></span>
+            <span class="execution-time">Tempo de processamento: <span id="resTempo"></span> μs</span>
         </div>
         
         <div id="alertaOverflow" class="feedback-box alert-box">
             ⚠️ OVERFLOW DETECTADO!
+            <span class="execution-time" style="color:#b71c1c;">Tempo de processamento: <span id="resTempoOverflow"></span> μs</span>
         </div>
 
         <div id="historyBox" class="history-box">
@@ -172,7 +190,6 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
 
     <script>
         // --- 1. Filtro em Tempo Real ---
-        // Impede que o usuário digite qualquer coisa que não seja '0' ou '1'
         function aplicarFiltroBinario(event) {
             this.value = this.value.replace(/[^01]/g, '');
         }
@@ -189,9 +206,11 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             const a = opA.value;
             const b = opB.value;
 
-            const unaria = (operacao === 'fat'); // fatorial usa apenas A
-            if (a.length !== 4 || (!unaria && b.length !== 4)) {
-                alert("Preencha exatamente 4 bits (0s e 1s) nos campos necessários.");
+            const unaria = (operacao === 'fat'); 
+            
+            // Validação dinâmica do tamanho de bits (garantindo pelo menos 2 bits e máximo 16)
+            if (a.length < 2 || a.length > 16 || (!unaria && a.length !== b.length)) {
+                alert("Preencha comprimentos válidos (ex: 4 bits, 8 bits). Ambos os operandos devem ter o mesmo tamanho.");
                 return;
             }
 
@@ -211,7 +230,7 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
                     restaurar();
 
                     if (data.erro) {
-                        alert("Operação ainda não implementada.");
+                        alert("Erro no Microcontrolador: " + data.erro);
                         return;
                     }
 
@@ -221,17 +240,20 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
                     if (data.overflow) {
                         divAlerta.style.display = 'block';
                         divRes.style.display = 'none';
+                        document.getElementById('resTempoOverflow').innerText = data.tempo_us;
                     } else {
                         document.getElementById('resDec').innerText = data.decimal;
                         document.getElementById('resBin').innerText = data.binario;
+                        document.getElementById('resTempo').innerText = data.tempo_us;
                         divRes.style.display = 'block';
                         divAlerta.style.display = 'none';
                     }
 
                     adicionarAoHistorico(a, b, operacao, data);
 
-                    opA.value = '';
-                    opB.value = '';
+                    // Deixa os valores nos inputs para facilitar re-testes durante coleta de tempos experimentais
+                    // opA.value = '';
+                    // opB.value = '';
                     opA.focus();
                 })
                 .catch(error => {
@@ -243,10 +265,15 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
 
         // Função auxiliar para montar a lista do histórico
         function adicionarAoHistorico(a, b, operacao, data) {
-            let sinal = '-';
-            if (operacao === 'add') sinal = '+';
-            else if (operacao === 'mul') sinal = '×';
-            else if (operacao === 'div') sinal = '÷';
+            let expressao = '';
+            
+            // Tratamento visual específico implementado pelo Aluno A
+            if (operacao === 'add') expressao = `${a} + ${b}`;
+            else if (operacao === 'sub') expressao = `${a} - ${b}`;
+            else if (operacao === 'mul') expressao = `${a} × ${b}`;
+            else if (operacao === 'div') expressao = `${a} ÷ ${b}`;
+            else if (operacao === 'fat') expressao = `${a}!`; // Oculta o operando B
+            
             let resultadoVisual;
 
             if (data.overflow) {
@@ -255,12 +282,14 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
                 resultadoVisual = `<strong>${data.binario}</strong> (Dec: ${data.decimal})`;
             }
 
-            const itemHTML = `<li>${a} ${sinal} ${b} = ${resultadoVisual}</li>`;
+            // Constrói a linha flexível com a expressão à esquerda e o tempo (em us) à direita
+            const itemHTML = `<li>
+                                <span>${expressao} = ${resultadoVisual}</span>
+                                <span class="history-time">[${data.tempo_us} μs]</span>
+                              </li>`;
             
-            // Adiciona no topo da lista
             historicoCalculos.unshift(itemHTML);
             
-            // Mantém apenas os últimos 5 cálculos para não poluir a tela
             if (historicoCalculos.length > 5) {
                 historicoCalculos.pop();
             }

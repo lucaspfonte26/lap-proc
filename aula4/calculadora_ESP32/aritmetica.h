@@ -2,7 +2,7 @@
 #define LED_BIT0 19 // Bit menos significativo (LSB)
 #define LED_BIT1 18
 #define LED_BIT2 5
-#define LED_BIT3 17 // Bit mais significativo (Sinal/MSB)
+#define LED_BIT3 7 // Bit mais significativo (Sinal/MSB para 4 bits)
 
 void inicializarHardware() {
     pinMode(LED_BIT0, OUTPUT);
@@ -17,7 +17,7 @@ void inicializarHardware() {
     digitalWrite(LED_BIT3, HIGH); delay(100); digitalWrite(LED_BIT3, LOW);
 }
 
-// Direciona o resultado truncado para os pinos físicos
+// Direciona o resultado truncado para os pinos físicos (exibe os 4 bits menos significativos)
 void atualizarLEDs(int resultado) {
     digitalWrite(LED_BIT0, resultado & 0x01);
     digitalWrite(LED_BIT1, (resultado >> 1) & 0x01);
@@ -25,17 +25,20 @@ void atualizarLEDs(int resultado) {
     digitalWrite(LED_BIT3, (resultado >> 3) & 0x01);
 }
 
-// Converte String binária para inteiro garantindo o sinal (Complemento de Dois de 4 bits)
-int parse4Bit(String bin) {
+// EVOLUÇÃO: Converte String binária para inteiro garantindo o sinal de forma DINÂMICA
+int parseBinarioDinamico(String bin) {
+    int bits = bin.length();
     int val = strtol(bin.c_str(), NULL, 2);
-    // Se o bit mais significativo for 1 (valor unsigned >= 8), o número é negativo
-    if (val >= 8) {
-        val = val - 16; 
+    
+    // Cálculo do MSB dinâmico para Complemento de Dois (ex: para 8 bits, limite é 128)
+    int limiteMSB = 1 << (bits - 1);
+    if (val >= limiteMSB) {
+        val = val - (1 << bits); 
     }
     return val;
 }
 
-// Multiplicação de 4 bits por somas repetidas (mantém o sinal dos operandos)
+// Multiplicação por somas repetidas (Mantida do Aluno A)
 int multiply(int a, int b) {
     int resultado = 0;
     int passos = (b < 0) ? -b : b;
@@ -45,10 +48,45 @@ int multiply(int a, int b) {
     return (b < 0) ? -resultado : resultado;
 }
 
-// Converte um inteiro para String binária de 4 bits exatos
-String formatarBinario(int val) {
+// IMPLEMENTAÇÃO DO ALUNO B: Fatorial em C (Iterativo)
+int factorial(int n) {
+    if (n < 0) return 0; // Tratamento básico para erro matemático
+    if (n <= 1) return 1;
+    int resultado = 1;
+    for (int i = 2; i <= n; i++) {
+        resultado *= i;
+    }
+    return resultado;
+}
+
+// DESAFIO DO ALUNO C: Divisão por Subtrações Sucessivas com tratamento de Erro
+int divideSucessiva(int a, int b, bool &erroDivisao) {
+    if (b == 0) {
+        erroDivisao = true; // Sinaliza divisão por zero
+        return 0;
+    }
+    erroDivisao = false;
+
+    // Determina o sinal do resultado usando XOR lógico
+    bool resultadoNegativo = (a < 0) ^ (b < 0);
+
+    // Obtém os valores absolutos para a subtração sucessiva
+    int absA = (a < 0) ? -a : a;
+    int absB = (b < 0) ? -b : b;
+    
+    int quociente = 0;
+    while (absA >= absB) {
+        absA -= absB;
+        quociente++;
+    }
+
+    return resultadoNegativo ? -quociente : quociente;
+}
+
+// EVOLUÇÃO: Converte um inteiro para String binária com tamanho de bits configurável
+String formatarBinarioDinamico(int val, int bits) {
     String bin = "";
-    for(int i = 3; i >= 0; i--) {
+    for(int i = bits - 1; i >= 0; i--) {
         bin += ((val >> i) & 0x01) ? "1" : "0";
     }
     return bin;
