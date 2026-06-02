@@ -45,6 +45,7 @@ int multiply(int a, int b) {
     int passos = (b < 0) ? -b : b;
     for (int i = 0; i < passos; i++) {
         resultado += a;
+        asm volatile("" : "+r"(resultado)); // impede final-value replacement
     }
     return (b < 0) ? -resultado : resultado;
 }
