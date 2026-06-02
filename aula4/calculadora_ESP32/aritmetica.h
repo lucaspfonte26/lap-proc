@@ -1,3 +1,5 @@
+#include <math.h>
+
 // Mapeamento GPIO - Ajuste conforme as conexões físicas na protoboard
 #define LED_BIT0 19 // Bit menos significativo (LSB)
 #define LED_BIT1 18
@@ -81,6 +83,54 @@ int divideSucessiva(int a, int b, bool &erroDivisao) {
     }
 
     return resultadoNegativo ? -quociente : quociente;
+}
+
+// Dispatch barato por código numérico (evita comparar String dentro do laço)
+int executarOp(int opcode, int a, int b) {
+    switch (opcode) {
+        case 1: return a + b;
+        case 2: return a - b;
+        case 3: return multiply(a, b);
+        case 4: return factorial(a);
+        case 5: { bool e; return divideSucessiva(a, b, e); }
+    }
+    return 0;
+}
+
+// Mede qualquer operação em lotes: repeticoes por lote vence a resolução de 1 us;
+// amostras geram média e desvio padrão amostral (sqrtf).
+void medirOperacao(String op, int a, int b, int repeticoes, int amostras,
+                   float &mediaUs, float &desvioUs) {
+    static volatile int sink; // impede o compilador de descartar o cálculo
+    int opcode = 0;
+    if (op == "add") opcode = 1;
+    else if (op == "sub") opcode = 2;
+    else if (op == "mul") opcode = 3;
+    else if (op == "fat") opcode = 4;
+    else if (op == "div") opcode = 5;
+
+    if (amostras > 60) amostras = 60;
+    float medias[60];
+    float soma = 0.0f;
+
+    for (int s = 0; s < amostras; s++) {
+        int64_t ini = esp_timer_get_time();
+        for (int r = 0; r < repeticoes; r++) {
+            sink = executarOp(opcode, a, b);
+        }
+        int64_t fim = esp_timer_get_time();
+        medias[s] = (float)(fim - ini) / repeticoes;
+        soma += medias[s];
+    }
+
+    mediaUs = soma / amostras;
+
+    float somaQuad = 0.0f;
+    for (int s = 0; s < amostras; s++) {
+        float d = medias[s] - mediaUs;
+        somaQuad += d * d;
+    }
+    desvioUs = (amostras > 1) ? sqrtf(somaQuad / (amostras - 1)) : 0.0f;
 }
 
 // EVOLUÇÃO: Converte um inteiro para String binária com tamanho de bits configurável

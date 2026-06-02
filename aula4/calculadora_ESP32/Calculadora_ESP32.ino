@@ -48,9 +48,8 @@ void processarCalculo() {
     int resultado = 0;
     bool implementado = true;
     bool erroDivisao = false;
-
-    // Captura o timestamp inicial de alta precisão (em microssegundos)
-    int64_t tempoInicio = esp_timer_get_time();
+    float mediaUs = 0.0f;
+    float desvioUs = 0.0f;
 
     if (op == "add") {
         resultado = valA + valB;
@@ -66,10 +65,6 @@ void processarCalculo() {
         implementado = false;
     }
 
-    // Captura o timestamp final imediatamente após o término do cálculo
-    int64_t tempoFim = esp_timer_get_time();
-    int64_t tempoExecucaoUs = tempoFim - tempoInicio; // Tempo decorrido em us
-
     // Tratamento de Erros Críticos antes de enviar ao usuário
     if (!implementado) {
         server.send(200, "application/json", "{\"erro\":\"operacao nao implementada\"}");
@@ -79,6 +74,10 @@ void processarCalculo() {
         server.send(200, "application/json", "{\"erro\":\"divisao por zero\"}");
         return;
     }
+
+    // Benchmark de todas as operações: média + desvio (vence a resolução de 1 us)
+    int repeticoes = (tamanhoBits <= 4) ? 2000 : (tamanhoBits <= 8 ? 500 : 20);
+    medirOperacao(op, valA, valB, repeticoes, 30, mediaUs, desvioUs);
 
     // 4. Detecção de Overflow Dinâmica (Limites mudam conforme o número de bits)
     int limiteMin = -(1 << (tamanhoBits - 1));
@@ -95,7 +94,8 @@ void processarCalculo() {
     jsonResposta += "\"decimal\":" + String(resultado) + ",";
     jsonResposta += "\"binario\":\"" + formatarBinarioDinamico(resultadoMascarado, tamanhoBits) + "\",";
     jsonResposta += "\"overflow\":" + String(overflow ? "true" : "false") + ",";
-    jsonResposta += "\"tempo_us\":" + String((long)tempoExecucaoUs); // Métrica de desempenho enviada à Web
+    jsonResposta += "\"tempo_us\":" + String(mediaUs, 3) + ",";
+    jsonResposta += "\"desvio_us\":" + String(desvioUs, 3); // Desvio padrão amostral do benchmark
     jsonResposta += "}";
 
     server.send(200, "application/json", jsonResposta);

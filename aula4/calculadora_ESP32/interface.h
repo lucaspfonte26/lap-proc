@@ -199,6 +199,16 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
         // --- Variável global do Histórico ---
         let historicoCalculos = [];
 
+        // Formata "média ± desvio"; o desvio só aparece quando há benchmark (multiplicação)
+        function formatarTempo(data) {
+            const media = parseFloat(data.tempo_us);
+            const desvio = data.desvio_us !== undefined ? parseFloat(data.desvio_us) : 0;
+            if (desvio > 0) {
+                return `${media.toFixed(2)} ± ${desvio.toFixed(2)}`;
+            }
+            return media.toFixed(2);
+        }
+
         // --- 2. Função principal de cálculo ---
         function calcular(operacao, botao) {
             const opA = document.getElementById('opA');
@@ -240,11 +250,11 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
                     if (data.overflow) {
                         divAlerta.style.display = 'block';
                         divRes.style.display = 'none';
-                        document.getElementById('resTempoOverflow').innerText = data.tempo_us;
+                        document.getElementById('resTempoOverflow').innerText = formatarTempo(data);
                     } else {
                         document.getElementById('resDec').innerText = data.decimal;
                         document.getElementById('resBin').innerText = data.binario;
-                        document.getElementById('resTempo').innerText = data.tempo_us;
+                        document.getElementById('resTempo').innerText = formatarTempo(data);
                         divRes.style.display = 'block';
                         divAlerta.style.display = 'none';
                     }
@@ -285,7 +295,7 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             // Constrói a linha flexível com a expressão à esquerda e o tempo (em us) à direita
             const itemHTML = `<li>
                                 <span>${expressao} = ${resultadoVisual}</span>
-                                <span class="history-time">[${data.tempo_us} μs]</span>
+                                <span class="history-time">[${formatarTempo(data)} μs]</span>
                               </li>`;
             
             historicoCalculos.unshift(itemHTML);
