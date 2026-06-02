@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdint.h>
 
 // Mapeamento GPIO - Ajuste conforme as conexões físicas na protoboard
 #define LED_BIT0 19 // Bit menos significativo (LSB)
@@ -50,15 +51,23 @@ int multiply(int a, int b) {
     return (b < 0) ? -resultado : resultado;
 }
 
-int factorial(int n) {
-    if (n < 0) return 0; // Tratamento básico para erro matemático
+// Emula o int de 32 bits passo a passo: trunca a cada multiplicação (igual ao hardware)
+// e marca overflow se o produto não couber em 32 bits antes do truncamento.
+int factorial(int n, bool &overflow) {
+    overflow = false;
+    if (n < 0) { overflow = true; return 0; }
     if (n <= 1) return 1;
-    int resultado = 1;
+    long long resultado = 1;
     for (int i = 2; i <= n; i++) {
         resultado *= i;
+        if (resultado > INT32_MAX || resultado < INT32_MIN) overflow = true;
+        resultado = (int32_t)resultado; // wraparound de 32 bits, como o int faria
     }
-    return resultado;
+    return (int)resultado;
 }
+
+// Sobrecarga sem flag, para o benchmark/dispatch que não precisam do overflow
+int factorial(int n) { bool descartado; return factorial(n, descartado); }
 
 int divideSucessiva(int a, int b, bool &erroDivisao) {
     if (b == 0) {

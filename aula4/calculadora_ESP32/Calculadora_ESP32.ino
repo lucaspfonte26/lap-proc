@@ -48,6 +48,7 @@ void processarCalculo() {
     int resultado = 0;
     bool implementado = true;
     bool erroDivisao = false;
+    bool overflowFat = false;
     float mediaUs = 0.0f;
     float desvioUs = 0.0f;
 
@@ -58,7 +59,7 @@ void processarCalculo() {
     } else if (op == "mul") {
         resultado = multiply(valA, valB);
     } else if (op == "fat") {
-        resultado = factorial(valA);
+        resultado = factorial(valA, overflowFat);
     } else if (op == "div") {
         resultado = divideSucessiva(valA, valB, erroDivisao); 
     } else {
@@ -82,7 +83,7 @@ void processarCalculo() {
     // 4. Detecção de Overflow Dinâmica (Limites mudam conforme o número de bits)
     int limiteMin = -(1 << (tamanhoBits - 1));
     int limiteMax = (1 << (tamanhoBits - 1)) - 1;
-    bool overflow = (resultado > limiteMax || resultado < limiteMin);
+    bool overflow = overflowFat || (resultado > limiteMax || resultado < limiteMin);
 
     // 5. Mascaramento e Saída de Hardware
     int mascaraBits = (1 << tamanhoBits) - 1;
