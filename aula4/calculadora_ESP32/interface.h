@@ -40,7 +40,15 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             color: var(--poli-blue); 
             font-size: 28px; 
         }
-        .input-group { margin-bottom: 25px; }
+        .input-group { margin-bottom: 8px; }
+        .operand-preview {
+            margin-bottom: 25px;
+            min-height: 16px;
+            font-family: monospace;
+            font-size: 13px;
+            font-style: italic;
+            color: var(--time-color);
+        }
         input { 
             padding: 15px; 
             font-size: 20px; 
@@ -161,7 +169,9 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
             <input type="text" id="opA" maxlength="16" placeholder="Op A (Binário)" autocomplete="off">
             <input type="text" id="opB" maxlength="16" placeholder="Op B (Binário)" autocomplete="off">
         </div>
-        
+
+        <div class="operand-preview" id="operandPreview"></div>
+
         <div class="btn-group">
             <button id="btnSoma" onclick="calcular('add', this)">SOMAR</button>
             <button id="btnSub" onclick="calcular('sub', this)">SUBTRAIR</button>
@@ -192,9 +202,26 @@ const char HTML_INTERFACE[] PROGMEM = R"rawliteral(
         // --- 1. Filtro em Tempo Real ---
         function aplicarFiltroBinario(event) {
             this.value = this.value.replace(/[^01]/g, '');
+            atualizarPreviaOperandos();
         }
         document.getElementById('opA').addEventListener('input', aplicarFiltroBinario);
         document.getElementById('opB').addEventListener('input', aplicarFiltroBinario);
+
+        // Decimal com sinal (complemento de 2 dinâmico), igual ao parseBinarioDinamico do firmware
+        function valorBinarioComSinal(bin) {
+            const bits = bin.length;
+            let val = parseInt(bin, 2);
+            if (val >= (1 << (bits - 1))) val -= (1 << bits);
+            return val;
+        }
+        function atualizarPreviaOperandos() {
+            const a = document.getElementById('opA').value;
+            const b = document.getElementById('opB').value;
+            const partes = [];
+            if (a.length) partes.push('A = ' + valorBinarioComSinal(a));
+            if (b.length) partes.push('B = ' + valorBinarioComSinal(b));
+            document.getElementById('operandPreview').innerText = partes.join(' · ');
+        }
 
         // --- Variável global do Histórico ---
         let historicoCalculos = [];
