@@ -87,6 +87,7 @@ int divideSucessiva(int a, int b, bool &erroDivisao) {
     while (absA >= absB) {
         absA -= absB;
         quociente++;
+        asm volatile("" : "+r"(absA), "+r"(quociente)); // impede strength reduction p/ divisão do hardware
     }
 
     return resultadoNegativo ? -quociente : quociente;
