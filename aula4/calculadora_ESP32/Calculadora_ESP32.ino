@@ -10,8 +10,8 @@ void setup() {
     inicializarHardware();
 
     // Setup Webserver (WiFi Hotspot AP) sem internet
-    WiFi.softAP("Calculadora_ESP32"); 
-    Serial.println("Access Point Iniciado. SSID: Calculadora_ESP32");
+    WiFi.softAP("Calculadora_ESP32_Fialho"); 
+    Serial.println("Access Point Iniciado. SSID: Calculadora_ESP32_Fialho");
     Serial.print("Endereço IP: ");
     Serial.println(WiFi.softAPIP());
 
@@ -59,9 +59,9 @@ void processarCalculo() {
     } else if (op == "mul") {
         resultado = multiply(valA, valB);
     } else if (op == "fat") {
-        resultado = factorial(valA); // Integrado Aluno B (Ignora o operador B)
+        resultado = factorial(valA);
     } else if (op == "div") {
-        resultado = divideSucessiva(valA, valB, erroDivisao); // Integrado Aluno C
+        resultado = divideSucessiva(valA, valB, erroDivisao); 
     } else {
         implementado = false;
     }
@@ -90,7 +90,7 @@ void processarCalculo() {
     int resultadoMascarado = resultado & mascaraBits;
     atualizarLEDs(resultadoMascarado & 0x0F); // Garante segurança física enviando apenas os 4 pinos mapeados
 
-    // 6. Monta a resposta JSON incluindo a métrica de tempo para o Aluno C coletar
+    // 6. Monta a resposta JSON incluindo a métrica de tempo
     String jsonResposta = "{";
     jsonResposta += "\"decimal\":" + String(resultado) + ",";
     jsonResposta += "\"binario\":\"" + formatarBinarioDinamico(resultadoMascarado, tamanhoBits) + "\",";

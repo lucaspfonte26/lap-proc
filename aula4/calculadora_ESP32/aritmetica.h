@@ -11,10 +11,10 @@ void inicializarHardware() {
     pinMode(LED_BIT3, OUTPUT);
     
     // Teste inicial (Blink rápido) para confirmar inicialização do sistema
-    digitalWrite(LED_BIT0, HIGH); delay(100); digitalWrite(LED_BIT0, LOW);
-    digitalWrite(LED_BIT1, HIGH); delay(100); digitalWrite(LED_BIT1, LOW);
-    digitalWrite(LED_BIT2, HIGH); delay(100); digitalWrite(LED_BIT2, LOW);
-    digitalWrite(LED_BIT3, HIGH); delay(100); digitalWrite(LED_BIT3, LOW);
+    digitalWrite(LED_BIT0, HIGH); delay(1000); digitalWrite(LED_BIT0, LOW);
+    digitalWrite(LED_BIT1, HIGH); delay(1000); digitalWrite(LED_BIT1, LOW);
+    digitalWrite(LED_BIT2, HIGH); delay(1000); digitalWrite(LED_BIT2, LOW);
+    digitalWrite(LED_BIT3, HIGH); delay(1000); digitalWrite(LED_BIT3, LOW);
 }
 
 // Direciona o resultado truncado para os pinos físicos (exibe os 4 bits menos significativos)
@@ -38,7 +38,6 @@ int parseBinarioDinamico(String bin) {
     return val;
 }
 
-// Multiplicação por somas repetidas (Mantida do Aluno A)
 int multiply(int a, int b) {
     int resultado = 0;
     int passos = (b < 0) ? -b : b;
@@ -48,7 +47,6 @@ int multiply(int a, int b) {
     return (b < 0) ? -resultado : resultado;
 }
 
-// IMPLEMENTAÇÃO DO ALUNO B: Fatorial em C (Iterativo)
 int factorial(int n) {
     if (n < 0) return 0; // Tratamento básico para erro matemático
     if (n <= 1) return 1;
@@ -59,7 +57,6 @@ int factorial(int n) {
     return resultado;
 }
 
-// DESAFIO DO ALUNO C: Divisão por Subtrações Sucessivas com tratamento de Erro
 int divideSucessiva(int a, int b, bool &erroDivisao) {
     if (b == 0) {
         erroDivisao = true; // Sinaliza divisão por zero
@@ -83,7 +80,6 @@ int divideSucessiva(int a, int b, bool &erroDivisao) {
     return resultadoNegativo ? -quociente : quociente;
 }
 
-// EVOLUÇÃO: Converte um inteiro para String binária com tamanho de bits configurável
 String formatarBinarioDinamico(int val, int bits) {
     String bin = "";
     for(int i = bits - 1; i >= 0; i--) {
