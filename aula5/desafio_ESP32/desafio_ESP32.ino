@@ -6,7 +6,7 @@
 WebServer server(80);
 
 const int LED_PIN      = 3;
-const int LED_RES      = 13;
+const int LED_RES      = 11;
 const int LED_MAX_DUTY = (1 << LED_RES) - 1;
 int ledFreq  = 5000;
 int ledNivel = 0;
@@ -34,7 +34,8 @@ void aplicarAngulo() {
 void setup() {
     Serial.begin(115200);
 
-    ledcAttach(LED_PIN, ledFreq, LED_RES);         // timer LEDC do LED (kHz)
+    if (!ledcAttach(LED_PIN, ledFreq, LED_RES))    // timer LEDC do LED (kHz)
+        Serial.println("FALHA no ledcAttach do LED (reduza freq/resolucao)");
     ledcAttach(SERVO_PIN, SERVO_FREQ, SERVO_RES);  // timer LEDC do servo (50 Hz)
     aplicarBrilho();
     aplicarAngulo();

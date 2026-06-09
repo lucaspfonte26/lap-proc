@@ -6,7 +6,7 @@
 WebServer server(80);
 
 const int LED_PIN  = 3;
-const int LED_RES  = 13;              // resolucao do duty: 0..8191
+const int LED_RES  = 11;              // resolucao do duty: 0..2047 (cabe no clock do LEDC do C3)
 const int MAX_DUTY = (1 << LED_RES) - 1;
 
 int ledFreq  = 5000;                  // Hz, configuravel pela interface
@@ -20,7 +20,8 @@ void aplicarBrilho() {
 void setup() {
     Serial.begin(115200);
 
-    ledcAttach(LED_PIN, ledFreq, LED_RES);   // LEDC: timer + canal em hardware
+    if (!ledcAttach(LED_PIN, ledFreq, LED_RES))   // LEDC: timer + canal em hardware
+        Serial.println("FALHA no ledcAttach (reduza freq/resolucao)");
     aplicarBrilho();
 
     WiFi.softAP("LED_PWM_ESP32_Fialho");
@@ -52,7 +53,7 @@ void handleLed() {
 
 // /freq?hz=...  -> reconfigura a frequencia do PWM (teste de flicker)
 void handleFreq() {
-    ledFreq = constrain(server.arg("hz").toInt(), 10, 8000);  // 13 bits limita ~9.7 kHz
+    ledFreq = constrain(server.arg("hz").toInt(), 10, 8000);  // limite seguro p/ a resolucao
     ledcChangeFrequency(LED_PIN, ledFreq, LED_RES);
     aplicarBrilho();                  // reaplica o duty apos trocar a frequencia
     Serial.printf("Frequencia PWM: %d Hz\n", ledFreq);
