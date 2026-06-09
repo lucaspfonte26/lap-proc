@@ -17,7 +17,7 @@ int servoAng = 90;                         // posicao atual (graus)
 
 // converte angulo -> largura de pulso (us) -> duty cycle e atua no LEDC
 void aplicarAngulo() {
-    int us   = map(servoAng, 0, 180, PULSO_MIN_US, PULSO_MAX_US);
+    int us   = map(servoAng, 0, 180, PULSO_MIN_US, PULSO_MAX_US); // regra de 3
     int duty = map(us, 0, PERIODO_US, 0, MAX_DUTY);
     ledcWrite(SERVO_PIN, duty);
 }
