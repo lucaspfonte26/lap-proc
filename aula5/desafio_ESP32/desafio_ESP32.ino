@@ -1,21 +1,25 @@
 #include <WiFi.h>
 #include <WebServer.h>
-#include <ESP32Servo.h>
 #include "interface.h"
 
 // LED: GPIO3 + resistor 220-330 ohm -> GND | Servo: sinal GPIO4, VCC 5V, GND comum
 WebServer server(80);
-Servo servo;
 
-// ---- LED: LEDC direto (kHz), como no led_pwm_ESP32 ----
+// ---- LED: LEDC direto (kHz) ----
 const int LED_PIN      = 3;
 const int LED_RES      = 11;
 const int LED_MAX_DUTY = (1 << LED_RES) - 1;
 int ledFreq  = 5000;
 int ledNivel = 0;
 
-// ---- Servo: biblioteca ESP32Servo (50 Hz), como no servo_pwm_ESP32 ----
-const int SERVO_PIN = 4;
+// ---- Servo: LEDC direto (50 Hz) -- mesmo alocador do LED, sem conflito de timer ----
+const int SERVO_PIN      = 4;
+const int SERVO_FREQ     = 50;
+const int SERVO_RES      = 12;
+const int SERVO_MAX_DUTY = (1 << SERVO_RES) - 1;
+const int PERIODO_US     = 20000;
+const int PULSO_MIN_US   = 1000;
+const int PULSO_MAX_US   = 2000;
 int servoAng = 90;
 
 void aplicarBrilho() {
@@ -23,20 +27,21 @@ void aplicarBrilho() {
     ledcWrite(LED_PIN, duty);
 }
 
+void aplicarAngulo() {
+    int us   = map(servoAng, 0, 180, PULSO_MIN_US, PULSO_MAX_US);
+    int duty = map(us, 0, PERIODO_US, 0, SERVO_MAX_DUTY);
+    ledcWrite(SERVO_PIN, duty);
+}
+
 void setup() {
     Serial.begin(115200);
 
     if (!ledcAttach(LED_PIN, ledFreq, LED_RES))
-        Serial.println("FALHA no ledcAttach do LED (reduza freq/resolucao)");
+        Serial.println("FALHA no ledcAttach do LED");
+    if (!ledcAttach(SERVO_PIN, SERVO_FREQ, SERVO_RES))
+        Serial.println("FALHA no ledcAttach do servo");
     aplicarBrilho();
-
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
-    ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
-    servo.setPeriodHertz(50);
-    servo.attach(SERVO_PIN, 1000, 2000);
-    servo.write(servoAng);
+    aplicarAngulo();
 
     WiFi.softAP("Painel_ESP32_Fialho");
     Serial.print("Access Point iniciado. IP: ");
@@ -74,7 +79,8 @@ void handleFreq() {
 
 void handleServo() {
     servoAng = constrain(server.arg("ang").toInt(), 0, 180);
-    servo.write(servoAng);
-    Serial.printf("Servo: %d graus\n", servoAng);
+    aplicarAngulo();
+    int us = map(servoAng, 0, 180, PULSO_MIN_US, PULSO_MAX_US);
+    Serial.printf("Servo: %d graus (pulso %d us)\n", servoAng, us);
     server.send(200, "text/plain", "ok");
 }
