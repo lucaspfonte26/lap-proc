@@ -13,7 +13,7 @@ int ledFreq  = 5000;                  // Hz, configuravel pela interface
 int ledNivel = 0;                     // brilho em % (0..100)
 
 void aplicarBrilho() {
-    int duty = map(ledNivel, 0, 100, 0, MAX_DUTY);
+    int duty = map(ledNivel, 0, 100, 0, MAX_DUTY);  // regra de 3
     ledcWrite(LED_PIN, duty);
 }
 
