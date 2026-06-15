@@ -18,14 +18,9 @@ int valorLDRAtual = 0;
 // =============================================================================
 // Rotina de Serviço de Interrupção (ISR)
 // =============================================================================
-/**
- * @brief ISR disparada pelo evento elétrico no pino do Botão SOS.
- * Alocada na IRAM (Instrução RAM) do ESP32 para garantir latência mínima.
- */
 void IRAM_ATTR isrBotaoSOS() {
   unsigned long tempoAtual = millis();
   
-  // Algoritmo de Debounce por Software (Ignora repiques mecânicos dentro do intervalo)
   if (tempoAtual - tempoUltimaInterrupcao > DEBOUNCE_DELAY) {
     sosFlag = true;
     tempoUltimaInterrupcao = tempoAtual;
@@ -37,12 +32,6 @@ void IRAM_ATTR isrBotaoSOS() {
 // =============================================================================
 
 void initFirmware() {
-  // Configuração das saídas de sinalização visual
-  pinMode(LED_RED_PIN, OUTPUT);
-  pinMode(LED_GREEN_PIN, OUTPUT);
-  digitalWrite(LED_RED_PIN, LOW);
-  digitalWrite(LED_GREEN_PIN, LOW);
-
   // Configuração da entrada digital do botão utilizando resistor pull-up interno
   pinMode(BUTTON_SOS_PIN, INPUT_PULLUP);
   
@@ -51,6 +40,9 @@ void initFirmware() {
 
   // Força explicitamente a resolução nativa do hardware do ADC para 12 bits
   analogReadResolution(12);
+
+  // Inicializa o LED RGB nativo apagado (R=0, G=0, B=0)
+  rgbLedWrite(LED_BUILTIN, 0, 0, 0);
 }
 
 int obterLeituraLDR() {
@@ -65,51 +57,46 @@ bool sistemaEmEmergencia() {
 void atualizarControleSinais() {
   unsigned long tempoAtual = millis();
 
-  // 1. Tratamento Prévio de Prioridade Máxima: Captura do flag assíncrono da ISR
+  // 1. Tratamento Prévio de Prioridade Máxima (SOS)
   if (sosFlag) {
-    sosFlag = false;         // Consome o evento da interrupção
+    sosFlag = false;
     modoSOSAtivo = true;
     tempoInicioSOS = tempoAtual;
     
-    // Transição imediata de Estado Visual para Vermelho Puro
-    digitalWrite(LED_RED_PIN, HIGH);
-    digitalWrite(LED_GREEN_PIN, LOW);
+    // Transição imediata para Vermelho Fixo (Usando intensidade 64 para não ofuscar)
+    rgbLedWrite(LED_BUILTIN, 64, 0, 0);
   }
 
   // 2. Execução Determinística da Máquina de Estados
   if (modoSOSAtivo) {
-    // Estado de Bloqueio SOS por Tempo (Garante a permanência em vermelho por 3s)
+    // Mantém estado de bloqueio vermelho por 3s
     if (tempoAtual - tempoInicioSOS >= SOS_DURATION) {
-      modoSOSAtivo = false;  // Libera a prioridade do sistema
-      digitalWrite(LED_RED_PIN, LOW);
-      digitalWrite(LED_GREEN_PIN, LOW);
+      modoSOSAtivo = false;  
+      rgbLedWrite(LED_BUILTIN, 0, 0, 0); // Apaga ao sair do SOS
     }
   } 
   else {
-    // Estado de Monitoramento Padrão de Luminosidade (Baixa Prioridade)
+    // Monitoramento padrão (Baixa Prioridade)
     obterLeituraLDR();
 
-    // Se a leitura analógica quantizada estiver abaixo do limiar operacional
     if (valorLDRAtual < LDR_THRESHOLD) {
-      // Temporização não-bloqueante para alternância do estado do LED a cada 2000ms
+      // Temporização para alternar LED amarelo a cada 2000ms
       if (tempoAtual - tempoUltimoPisca >= 2000) {
         estadoLedAmarelo = !estadoLedAmarelo;
         tempoUltimoPisca = tempoAtual;
       }
 
       if (estadoLedAmarelo) {
-        // Ativação combinada para gerar a cor Amarela
-        digitalWrite(LED_RED_PIN, HIGH);
-        digitalWrite(LED_GREEN_PIN, HIGH);
+        // Gera cor Amarela no LED RGB built-in (R=G, B=0)
+        rgbLedWrite(LED_BUILTIN, 64, 64, 0);
       } else {
-        digitalWrite(LED_RED_PIN, LOW);
-        digitalWrite(LED_GREEN_PIN, LOW);
+        // Apaga o LED no intervalo do pisca
+        rgbLedWrite(LED_BUILTIN, 0, 0, 0);
       }
     } 
     else {
-      // Condição de Luminosidade Adequada (LEDs Apagados)
-      digitalWrite(LED_RED_PIN, LOW);
-      digitalWrite(LED_GREEN_PIN, LOW);
+      // Luminosidade Normal: Garante que o LED fique apagado
+      rgbLedWrite(LED_BUILTIN, 0, 0, 0);
       estadoLedAmarelo = false;
     }
   }

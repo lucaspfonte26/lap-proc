@@ -1,3 +1,6 @@
+#ifndef WEBSERVER_H
+#define WEBSERVER_H
+
 #include <pgmspace.h>
 
 const char HTML_INTERFACE[] PROGMEM = R"rawliteral(

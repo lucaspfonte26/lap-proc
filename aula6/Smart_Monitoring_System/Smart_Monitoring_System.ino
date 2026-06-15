@@ -23,8 +23,8 @@ void setup() {
   Serial.println("[SISTEMA] Firmware Base pronto.");
 
   // Setup Webserver (WiFi Hotspot AP) sem internet
-    WiFi.softAP("Calculadora_ESP32_Fialho"); 
-    Serial.println("Access Point Iniciado. SSID: Calculadora_ESP32_Fialho");
+    WiFi.softAP("Smart_Monitoring_SOS_ESP32_Fialho"); 
+    Serial.println("Access Point Iniciado. SSID: Smart_Monitoring_SOS_ESP32_Fialho");
     Serial.print("Endereço IP: ");
     Serial.println(WiFi.softAPIP());
 
@@ -55,7 +55,7 @@ void loop() {
     tempoUltimoEnvioTelemetria = tempoAtual;
 
     // Captura os dados processados pelo firmware base
-    ldrValor = obterLeituraLDR();
+    ldrValor = obterLeituraLDR(); // talvez seja desnecessaria essa linha aq (dupla leitura)
     statusSOS = sistemaEmEmergencia();
 
     // Emissão estruturada de logs via serial para validação das métricas do pré-lab
