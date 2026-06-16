@@ -1,5 +1,5 @@
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
+#ifndef WEBSERVER_CORE_H
+#define WEBSERVER_CORE_H
 
 #include <pgmspace.h>
 

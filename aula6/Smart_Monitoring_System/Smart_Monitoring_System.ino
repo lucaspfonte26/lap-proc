@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <WebServer.h>
-#include "webserver.h"
+#include "webserver_core.h"
 #include "firmware.h"
 
 WebServer server(80);
