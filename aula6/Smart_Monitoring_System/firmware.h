@@ -6,9 +6,8 @@
 // =============================================================================
 // Definições de Hardware (Mapeamento de Pinos GPIO)
 // =============================================================================
-#define LDR_PIN         34    // Pino ADC1_CH6 do ESP32 (Leitura analógica do LDR)
-#define BUTTON_SOS_PIN  25    // Pino GPIO com suporte a interrupção externa (Botão SOS)
-// Nota: O LED_BUILTIN já é mapeado nativamente pela placa selecionada na Arduino IDE.
+#define LDR_PIN         9    // Pino ADC1_CH6 do ESP32 (Leitura analógica do LDR)
+#define BUTTON_SOS_PIN  7    // Pino GPIO com suporte a interrupção externa (Botão SOS)
 
 // =============================================================================
 // Constantes de Configuração e Temporização

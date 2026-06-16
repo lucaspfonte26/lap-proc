@@ -22,21 +22,18 @@ void setup() {
 
   Serial.println("[SISTEMA] Firmware Base pronto.");
 
-  // Setup Webserver (WiFi Hotspot AP) sem internet
-    WiFi.softAP("Smart_Monitoring_SOS_ESP32_Fialho"); 
-    Serial.println("Access Point Iniciado. SSID: Smart_Monitoring_SOS_ESP32_Fialho");
-    Serial.print("Endereço IP: ");
-    Serial.println(WiFi.softAPIP());
+  WiFi.softAP("Smart_Monitoring_SOS_ESP32_Fialho"); 
+  Serial.println("Access Point Iniciado. SSID: Smart_Monitoring_SOS_ESP32_Fialho");
+  Serial.print("Endereço IP: ");
+  Serial.println(WiFi.softAPIP());
 
-    // Rota raiz: Envia a interface HTML
-    server.on("/", HTTP_GET, []() {
-        server.send(200, "text/html", HTML_INTERFACE);
-    });
+  server.on("/", HTTP_GET, []() {
+      server.send(200, "text/html", HTML_INTERFACE);
+  });
 
-    server.on("/dados", HTTP_GET, []() {
-      // Monta um JSON simples com os valores salvos
-      String json = "{\"ldr\":" + String(ldrValor) + ", \"sos\":" + String(statusSOS ? "true" : "false") + "}";
-      server.send(200, "application/json", json);
+  server.on("/dados", HTTP_GET, []() {
+    String json = "{\"ldr\":" + String(ldrValor) + ", \"sos\":" + String(statusSOS ? "true" : "false") + "}";
+    server.send(200, "application/json", json);
   });
 
     server.begin();
@@ -46,7 +43,6 @@ void setup() {
 void loop() {
   server.handleClient();
   
-  // Processamento imediato das regras de transição de sinais e estados
   atualizarControleSinais();
 
   // Estrutura de Temporização não-bloqueante para atendimento do requisito de amostragem
@@ -54,11 +50,9 @@ void loop() {
   if (tempoAtual - tempoUltimoEnvioTelemetria >= INTERVALO_TELEMETRIA) {
     tempoUltimoEnvioTelemetria = tempoAtual;
 
-    // Captura os dados processados pelo firmware base
-    ldrValor = obterLeituraLDR(); // talvez seja desnecessaria essa linha aq (dupla leitura)
+    // ldrValor = obterLeituraLDR(); // talvez seja desnecessaria essa linha aq (dupla leitura)
     statusSOS = sistemaEmEmergencia();
 
-    // Emissão estruturada de logs via serial para validação das métricas do pré-lab
     Serial.print(">> TELEMETRIA - LDR (ADC 12-bit): ");
     Serial.print(ldrValor);
     Serial.print(" | Alerta SOS: ");
