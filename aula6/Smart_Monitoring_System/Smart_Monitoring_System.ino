@@ -50,7 +50,7 @@ void loop() {
   if (tempoAtual - tempoUltimoEnvioTelemetria >= INTERVALO_TELEMETRIA) {
     tempoUltimoEnvioTelemetria = tempoAtual;
 
-    // ldrValor = obterLeituraLDR(); // talvez seja desnecessaria essa linha aq (dupla leitura)
+    ldrValor = obterLeituraLDR();
     statusSOS = sistemaEmEmergencia();
 
     Serial.print(">> TELEMETRIA - LDR (ADC 12-bit): ");

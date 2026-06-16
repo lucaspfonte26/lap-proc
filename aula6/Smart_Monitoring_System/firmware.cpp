@@ -46,7 +46,6 @@ void initFirmware() {
 }
 
 int obterLeituraLDR() {
-  valorLDRAtual = analogRead(LDR_PIN);
   return valorLDRAtual;
 }
 
@@ -77,7 +76,7 @@ void atualizarControleSinais() {
   } 
   else {
     // Monitoramento padrão (Baixa Prioridade)
-    obterLeituraLDR();
+    valorLDRAtual = analogRead(LDR_PIN);
 
     if (valorLDRAtual < LDR_THRESHOLD) {
       // Temporização para alternar LED amarelo a cada 2000ms
