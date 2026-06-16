@@ -30,15 +30,13 @@ void IRAM_ATTR isrBotaoPedestre() {
 }
 
 void initSemaforo() {
-  pinMode(LED_RED_PIN, OUTPUT);
-  pinMode(LED_GREEN_PIN, OUTPUT);
-  digitalWrite(LED_RED_PIN, LOW);
-  digitalWrite(LED_GREEN_PIN, LOW);
-
   pinMode(BUTTON_PEDESTRE_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PEDESTRE_PIN), isrBotaoPedestre, FALLING);
 
   analogReadResolution(12); // Garante resolução de 12-bit
+
+  // Inicializa o LED RGB nativo apagado (R=0, G=0, B=0)
+  rgbLedWrite(LED_BUILTIN, 0, 0, 0);
 }
 
 int obterValorLDR() {
@@ -72,12 +70,10 @@ void atualizarSemaforo() {
     }
 
     if (estadoPiscaAmarelo) {
-      // Vermelho + Verde combinados geram a cor Amarela na sua placa
-      digitalWrite(LED_RED_PIN, HIGH);
-      digitalWrite(LED_GREEN_PIN, HIGH);
+      // Cor Amarela no LED RGB (R=G, B=0)
+      rgbLedWrite(LED_BUILTIN, LED_BRILHO, LED_BRILHO, 0);
     } else {
-      digitalWrite(LED_RED_PIN, LOW);
-      digitalWrite(LED_GREEN_PIN, LOW);
+      rgbLedWrite(LED_BUILTIN, 0, 0, 0);
     }
     return; // Sai da função, ignorando a lógica diurna
   }
@@ -102,15 +98,13 @@ void atualizarSemaforo() {
   // Gerenciamento dos estados do semáforo diurno
   switch (estadoAtual) {
     case DIA_VERDE:
-      // Carros passam: LED Verde ligado, Vermelho desligado
-      digitalWrite(LED_GREEN_PIN, HIGH);
-      digitalWrite(LED_RED_PIN, LOW);
+      // Carros passam: LED apagado (sem cor verde, conforme solicitado)
+      rgbLedWrite(LED_BUILTIN, 0, 0, 0);
       break;
 
     case DIA_AMARELO:
-      // Transição segura: LED Amarelo (Verde + Vermelho) ligado
-      digitalWrite(LED_GREEN_PIN, HIGH);
-      digitalWrite(LED_RED_PIN, HIGH);
+      // Transição segura: LED Amarelo (R=G, B=0)
+      rgbLedWrite(LED_BUILTIN, LED_BRILHO, LED_BRILHO, 0);
       
       // Verifica se o tempo de permanência no amarelo esgotou
       if (tempoAtual - tempoMudancaEstado >= TEMPO_AMARELO) {
@@ -120,9 +114,8 @@ void atualizarSemaforo() {
       break;
 
     case DIA_VERMELHO:
-      // Carros param / Pedestre atravessa: LED Vermelho ligado, Verde desligado
-      digitalWrite(LED_GREEN_PIN, LOW);
-      digitalWrite(LED_RED_PIN, HIGH);
+      // Carros param / Pedestre atravessa: LED Vermelho ligado
+      rgbLedWrite(LED_BUILTIN, LED_BRILHO, 0, 0);
       
       // Verifica se o tempo de travessia do pedestre terminou
       if (tempoAtual - tempoMudancaEstado >= TEMPO_VERMELHO) {
