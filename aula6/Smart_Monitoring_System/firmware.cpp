@@ -78,7 +78,7 @@ void atualizarControleSinais() {
     // Monitoramento padrão (Baixa Prioridade)
     valorLDRAtual = analogRead(LDR_PIN);
 
-    if (valorLDRAtual < LDR_THRESHOLD) {
+    if (valorLDRAtual > LDR_THRESHOLD) {
       // Temporização para alternar LED amarelo a cada 2000ms
       if (tempoAtual - tempoUltimoPisca >= 2000) {
         estadoLedAmarelo = !estadoLedAmarelo;

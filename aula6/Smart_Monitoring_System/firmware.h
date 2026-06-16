@@ -6,7 +6,7 @@
 // =============================================================================
 // Definições de Hardware (Mapeamento de Pinos GPIO)
 // =============================================================================
-#define LDR_PIN         9    // Pino ADC1_CH6 do ESP32 (Leitura analógica do LDR)
+#define LDR_PIN         4    // Pino ADC1_CH6 do ESP32 (Leitura analógica do LDR)
 #define BUTTON_SOS_PIN  7    // Pino GPIO com suporte a interrupção externa (Botão SOS)
 
 // =============================================================================
@@ -14,7 +14,7 @@
 // =============================================================================
 #define DEBOUNCE_DELAY  50    // Janela de debounce por software (50 milissegundos)
 #define SOS_DURATION    3000  // Duração de retenção do Alerta SOS (3 segundos)
-#define LDR_THRESHOLD   1500  // Limiar digital de baixa luminosidade (0 a 4095)
+#define LDR_THRESHOLD   3200  // Limiar digital de baixa luminosidade (0 a 4095)
 
 // =============================================================================
 // Interface de Funções Públicas
