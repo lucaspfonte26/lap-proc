@@ -6,8 +6,8 @@
 // =============================================================================
 // Definições de Hardware (Mapeamento de Pinos GPIO)
 // =============================================================================
-#define LDR_PIN             34    // Leitura analógica do LDR
-#define BUTTON_PEDESTRE_PIN 25    // Botão de Pedestres (Antigo SOS)
+#define LDR_PIN             4     // Pino ADC do ESP32-C3 (Leitura analógica do LDR)
+#define BUTTON_PEDESTRE_PIN 7     // Botão de Pedestres (GPIO com interrupção)
 // Nota: O LED RGB é o LED_BUILTIN nativo da placa, controlado via rgbLedWrite().
 // Não há pinos digitais separados de cor (R/G/B) — tudo é feito em um único canal.
 
@@ -15,7 +15,7 @@
 // Constantes de Configuração e Temporização
 // =============================================================================
 #define DEBOUNCE_DELAY      50    // Janela de debounce (ms)
-#define LDR_THRESHOLD       1500  // Limiar de transição Dia/Noite (0 a 4095)
+#define LDR_THRESHOLD       3200  // Limiar de transição Dia/Noite (0 a 4095)
 #define TEMPO_AMARELO       1000  // Duração do sinal Amarelo no Dia (2 segundos)
 #define TEMPO_VERMELHO      5000  // Duração do sinal Vermelho para pedestre (5 segundos)
 #define LED_BRILHO          64    // Intensidade do LED RGB (0-255), evita ofuscar

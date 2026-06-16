@@ -44,7 +44,7 @@ int obterValorLDR() {
 }
 
 bool verificarSeEhNoite() {
-  return (valorLDR < LDR_THRESHOLD);
+  return (valorLDR > LDR_THRESHOLD);
 }
 
 bool verificarPedestreAtivo() {
