@@ -16,6 +16,25 @@ static uint32_t g_ultimaBordaMenos = 0;
 static bool g_tique = true;   // alterna a posicao do servo a cada batida
 
 // =============================================================================
+// Buzzer: passivo precisa de PWM na ressonancia; ativo so de nivel alto.
+// =============================================================================
+static void buzzerLigar() {
+#if BUZZER_PASSIVO
+    gpioPWM(PIN_BUZZER, 50);   // 50% de duty sobre range 100
+#else
+    gpioWrite(PIN_BUZZER, 1);
+#endif
+}
+
+static void buzzerDesligar() {
+#if BUZZER_PASSIVO
+    gpioPWM(PIN_BUZZER, 0);
+#else
+    gpioWrite(PIN_BUZZER, 0);
+#endif
+}
+
+// =============================================================================
 // Rotinas de Servico de Interrupcao dos botoes
 // Debounce em dois niveis: glitch filter no pino (us) + janela de 200 ms aqui.
 // =============================================================================
@@ -50,7 +69,11 @@ bool initMetronomo() {
     }
 
     gpioSetMode(PIN_BUZZER, PI_OUTPUT);
-    gpioWrite(PIN_BUZZER, 0);
+#if BUZZER_PASSIVO
+    gpioSetPWMfrequency(PIN_BUZZER, BUZZER_TOM_HZ);
+    gpioSetPWMrange(PIN_BUZZER, 100);
+#endif
+    buzzerDesligar();
 
     gpioSetMode(PIN_BOTAO_MAIS, PI_INPUT);
     gpioSetMode(PIN_BOTAO_MENOS, PI_INPUT);
@@ -71,7 +94,7 @@ bool initMetronomo() {
 
 void encerrarMetronomo() {
     gpioPWM(PIN_LED, 0);
-    gpioWrite(PIN_BUZZER, 0);
+    buzzerDesligar();
     gpioServo(PIN_SERVO, 0);   // pulso 0 = para de acionar o servo (relaxa)
     gpioTerminate();
 }
@@ -90,10 +113,10 @@ void passoMetronomo() {
     g_tique = !g_tique;
     gpioPWM(PIN_LED, LED_PWM_RANGE);   // duty 100%
 #if BUZZER_HABILITADO
-    gpioWrite(PIN_BUZZER, 1);
+    buzzerLigar();
 #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(BEEP_MS));
-    gpioWrite(PIN_BUZZER, 0);
+    buzzerDesligar();
     gpioPWM(PIN_LED, 0);               // LED apagado
 
     // --- Espera compensatoria (anti-drift): dorme o grosso, busy-wait no fim ---

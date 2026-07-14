@@ -7,7 +7,7 @@
 // Pinos fixos da Freenove Projects Board (componentes ja soldados).
 #define PIN_LED          17   // LED indicador: PWM por SOFTWARE (GPIO 17 nao tem PWM de hardware)
 #define PIN_SERVO        18   // Servo: gpioServo, pulso 50 Hz (nao usar junto com o WS2812)
-#define PIN_BUZZER       12   // Buzzer ATIVO: sinal digital on/off (compartilha o GPIO com o rele)
+#define PIN_BUZZER       4    // Buzzer da placa (ver BUZZER_PASSIVO abaixo)
 #define PIN_BOTAO_MAIS   21   // Botao incrementa BPM
 #define PIN_BOTAO_MENOS  20   // Botao decrementa BPM
 
@@ -26,6 +26,8 @@
 #define SERVO_DIR_US     1800    // Posicao "taque" do braco
 
 #define BEEP_MS          30      // Duracao do beep por batida
+#define BUZZER_PASSIVO   1       // 1 = passivo (PWM na ressonancia); 0 = ativo (nivel digital)
+#define BUZZER_TOM_HZ    2000    // Ressonancia do buzzer passivo do kit
 #define DEBOUNCE_US      200000  // Janela de debounce mecanico (200 ms em us)
 #define GLITCH_US        300     // Filtro de ruido eletrico (us)
 #define LED_PWM_HZ       1000    // Frequencia do PWM do LED (persistencia da visao)
