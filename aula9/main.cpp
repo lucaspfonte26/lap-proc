@@ -3,9 +3,6 @@
 #include <atomic>
 #include <cstdio>
 
-// =============================================================================
-// Ponto de entrada: inicia o metronomo, roda o loop e encerra limpo no Ctrl+C.
-// =============================================================================
 static std::atomic<bool> g_rodando{true};
 
 static void onSigint(int) { g_rodando.store(false); }
@@ -13,7 +10,7 @@ static void onSigint(int) { g_rodando.store(false); }
 int main() {
     if (!initMetronomo()) return 1;
 
-    std::signal(SIGINT, onSigint);   // Ctrl+C encerra limpo (senao buzzer/servo travam)
+    std::signal(SIGINT, onSigint);   // sem isso, Ctrl+C deixa buzzer e servo ligados
     std::printf("Metronomo iniciado (BPM=%d). Botoes ajustam o BPM. Ctrl+C para sair.\n",
                 obterBPM());
 
