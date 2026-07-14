@@ -3,6 +3,7 @@
 #include "metronomo.h"
 #include <pigpio.h>
 #include <chrono>
+#include <initializer_list>
 #include <thread>
 #include <cstdio>
 
