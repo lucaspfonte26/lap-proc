@@ -13,26 +13,32 @@ int main() {
         return 1;
     }
 
+    gpioSetMode(PIN_LED, PI_OUTPUT);
+    gpioSetPWMrange(PIN_LED, LED_PWM_RANGE);
+
     // 1) Rampa de brilho (duty 0 -> 100 -> 0 %) a 1 kHz -> observar variacao suave
     std::printf("Rampa de brilho a %d Hz...\n", LED_PWM_HZ);
-    for (int duty = 0; duty <= 1000000; duty += 50000) {
-        gpioHardwarePWM(PIN_LED, LED_PWM_HZ, duty);
+    gpioSetPWMfrequency(PIN_LED, LED_PWM_HZ);
+    for (int duty = 0; duty <= LED_PWM_RANGE; duty += 50) {
+        gpioPWM(PIN_LED, duty);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-    for (int duty = 1000000; duty >= 0; duty -= 50000) {
-        gpioHardwarePWM(PIN_LED, LED_PWM_HZ, duty);
+    for (int duty = LED_PWM_RANGE; duty >= 0; duty -= 50) {
+        gpioPWM(PIN_LED, duty);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
-    // 2) Varias frequencias a 50% de duty -> anotar a partir de qual some o flicker
-    const int freqs[] = {5, 20, 50, 100, 500, 1000};
+    // 2) Varias frequencias a 50% de duty -> anotar a partir de qual some o flicker.
+    // Valores validos do PWM por software do pigpio (amostragem de 5 us).
+    const int freqs[] = {10, 20, 50, 100, 500, 1000};
     for (int f : freqs) {
-        std::printf("Frequencia = %d Hz (50%% duty)\n", f);
-        gpioHardwarePWM(PIN_LED, f, 500000);
+        int real = gpioSetPWMfrequency(PIN_LED, f);
+        gpioPWM(PIN_LED, LED_PWM_RANGE / 2);
+        std::printf("Frequencia pedida = %d Hz | aplicada = %d Hz (50%% duty)\n", f, real);
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 
-    gpioHardwarePWM(PIN_LED, LED_PWM_HZ, 0);
+    gpioPWM(PIN_LED, 0);
     gpioTerminate();
     return 0;
 }

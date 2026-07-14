@@ -4,11 +4,12 @@
 // =============================================================================
 // Mapeamento de pinos GPIO (numeracao BCM)
 // =============================================================================
-#define PIN_LED          18   // LED de status: PWM por hardware 1 kHz (+ resistor 330 ohm)
-#define PIN_SERVO        17   // Servo SG90: gpioServo, pulso 50 Hz
-#define PIN_BUZZER       27   // Buzzer ativo: liga/desliga
-#define PIN_BOTAO_MAIS   23   // Botao incrementa BPM
-#define PIN_BOTAO_MENOS  24   // Botao decrementa BPM
+// Pinos fixos da Freenove Projects Board (componentes ja soldados).
+#define PIN_LED          17   // LED indicador: PWM por SOFTWARE (GPIO 17 nao tem PWM de hardware)
+#define PIN_SERVO        18   // Servo: gpioServo, pulso 50 Hz (nao usar junto com o WS2812)
+#define PIN_BUZZER       12   // Buzzer ATIVO: sinal digital on/off (compartilha o GPIO com o rele)
+#define PIN_BOTAO_MAIS   21   // Botao incrementa BPM
+#define PIN_BOTAO_MENOS  20   // Botao decrementa BPM
 
 // =============================================================================
 // Constantes de configuracao
@@ -28,6 +29,7 @@
 #define DEBOUNCE_US      200000  // Janela de debounce mecanico (200 ms em us)
 #define GLITCH_US        300     // Filtro de ruido eletrico (us)
 #define LED_PWM_HZ       1000    // Frequencia do PWM do LED (persistencia da visao)
+#define LED_PWM_RANGE    1000    // Resolucao do duty: 0 = apagado, LED_PWM_RANGE = 100%
 #define BUZZER_HABILITADO 1      // 1 = som ligado; 0 = silencioso (LED/servo seguem)
 
 // =============================================================================

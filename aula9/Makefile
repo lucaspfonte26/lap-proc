@@ -1,17 +1,18 @@
 # =============================================================================
 # Metronomo no Raspberry Pi 3 (PCS3732 - Aula 9)
 #
-# Fiacao (numeracao BCM):
-#   LED status   -> GPIO18  (resistor 330 ohm em serie ao anodo; catodo no GND)
-#   Servo SG90   -> sinal GPIO17 ; VCC 5V (fonte externa recomendada) ; GND comum
-#   Buzzer ativo -> GPIO27  (+ no pino, - no GND)
-#   Botao +BPM   -> GPIO23 ao GND (usa pull-up interno)
-#   Botao -BPM   -> GPIO24 ao GND (usa pull-up interno)
+# Hardware: Freenove Projects Board for Raspberry Pi (componentes ja soldados,
+# nada de protoboard). Pinos fixos da placa, numeracao BCM:
+#   LED indicador -> GPIO17  (sem PWM de hardware -> usamos gpioPWM, por software)
+#   Servo         -> GPIO18  (conector de servo da placa)
+#   Buzzer ativo  -> GPIO12  (sinal digital on/off; compartilha o GPIO com o rele)
+#   Botao +BPM    -> GPIO21
+#   Botao -BPM    -> GPIO20
 #
 # Como usar no laboratorio:
-#   1) sudo pigpiod       (inicia o daemon, se ainda nao estiver rodando)
-#   2) make               (compila os 4 binarios)
-#   3) sudo ./metronomo   (ou ./teste_led, ./teste_servo, ./teste_buzzer)
+#   1) sudo killall pigpiod   (o daemon conflita com gpioInitialise(); precisa estar parado)
+#   2) make                   (compila os 4 binarios)
+#   3) sudo ./metronomo       (ou ./teste_led, ./teste_servo, ./teste_buzzer)
 # =============================================================================
 CXX      = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2

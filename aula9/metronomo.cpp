@@ -61,13 +61,16 @@ bool initMetronomo() {
     gpioSetISRFunc(PIN_BOTAO_MAIS, FALLING_EDGE, 0, isrBotaoMais);
     gpioSetISRFunc(PIN_BOTAO_MENOS, FALLING_EDGE, 0, isrBotaoMenos);
 
-    gpioHardwarePWM(PIN_LED, LED_PWM_HZ, 0);  // LED apagado
-    gpioServo(PIN_SERVO, SERVO_MID_US);       // servo centralizado
+    gpioSetMode(PIN_LED, PI_OUTPUT);
+    gpioSetPWMfrequency(PIN_LED, LED_PWM_HZ);
+    gpioSetPWMrange(PIN_LED, LED_PWM_RANGE);
+    gpioPWM(PIN_LED, 0);                 // LED apagado
+    gpioServo(PIN_SERVO, SERVO_MID_US);  // servo centralizado
     return true;
 }
 
 void encerrarMetronomo() {
-    gpioHardwarePWM(PIN_LED, LED_PWM_HZ, 0);
+    gpioPWM(PIN_LED, 0);
     gpioWrite(PIN_BUZZER, 0);
     gpioServo(PIN_SERVO, 0);   // pulso 0 = para de acionar o servo (relaxa)
     gpioTerminate();
@@ -85,13 +88,13 @@ void passoMetronomo() {
     // --- Batida: servo (tique-taque), LED aceso e buzzer sincronizados ---
     gpioServo(PIN_SERVO, g_tique ? SERVO_ESQ_US : SERVO_DIR_US);
     g_tique = !g_tique;
-    gpioHardwarePWM(PIN_LED, LED_PWM_HZ, 1000000);  // duty 100%
+    gpioPWM(PIN_LED, LED_PWM_RANGE);   // duty 100%
 #if BUZZER_HABILITADO
     gpioWrite(PIN_BUZZER, 1);
 #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(BEEP_MS));
     gpioWrite(PIN_BUZZER, 0);
-    gpioHardwarePWM(PIN_LED, LED_PWM_HZ, 0);        // LED apagado
+    gpioPWM(PIN_LED, 0);               // LED apagado
 
     // --- Espera compensatoria (anti-drift): dorme o grosso, busy-wait no fim ---
     auto gasto = [&] {

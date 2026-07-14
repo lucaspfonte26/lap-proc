@@ -1,4 +1,5 @@
-// Teste isolado do buzzer ativo (liga/desliga): padrao de beeps.
+// Teste isolado do buzzer ATIVO da placa (sinal digital liga/desliga): padrao de beeps.
+// Buzzer ativo tem oscilador interno -> nao precisa de PWM, so de nivel alto.
 // Compilar: g++ -std=c++17 teste_buzzer.cpp -o teste_buzzer -lpigpio -lrt -pthread
 // Executar: sudo ./teste_buzzer
 #include "metronomo.h"
