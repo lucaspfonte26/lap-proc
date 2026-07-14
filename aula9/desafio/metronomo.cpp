@@ -34,33 +34,41 @@ static void ajustarBPM(int delta) {
     std::printf("BPM = %d\n", novo);
 }
 
-static void isrMais(int, int, uint32_t tick) {
-    if (aceitaBorda(g_ultimaMais, tick)) ajustarBPM(+BPM_PASSO);
+// Alerts, e nao gpioSetISRFunc: o ISR do pigpio depende do sysfs (/sys/class/gpio),
+// removido nos kernels novos. Os alerts vem da amostragem por DMA e sempre funcionam.
+// De quebra, o gpioGlitchFilter so tem efeito sobre alerts.
+// O botao e ativo em nivel baixo, entao a borda de interesse e level == 0.
+static void alertaMais(int, int level, uint32_t tick) {
+    if (level == 0 && aceitaBorda(g_ultimaMais, tick)) ajustarBPM(+BPM_PASSO);
 }
 
-static void isrMenos(int, int, uint32_t tick) {
-    if (aceitaBorda(g_ultimaMenos, tick)) ajustarBPM(-BPM_PASSO);
+static void alertaMenos(int, int level, uint32_t tick) {
+    if (level == 0 && aceitaBorda(g_ultimaMenos, tick)) ajustarBPM(-BPM_PASSO);
 }
 
-static void isrReset(int, int, uint32_t tick) {
-    if (!aceitaBorda(g_ultimaReset, tick)) return;
+static void alertaReset(int, int level, uint32_t tick) {
+    if (level != 0 || !aceitaBorda(g_ultimaReset, tick)) return;
     g_bpm.store(BPM_INICIAL);
     std::printf("BPM = %d (reset)\n", BPM_INICIAL);
 }
 
-static void isrSom(int, int, uint32_t tick) {
-    if (!aceitaBorda(g_ultimaSom, tick)) return;
+static void alertaSom(int, int level, uint32_t tick) {
+    if (level != 0 || !aceitaBorda(g_ultimaSom, tick)) return;
     bool novo = !g_som.load();
     g_som.store(novo);
     if (!novo) buzzerDesligar();   // corta um beep em andamento
     std::printf("Som %s\n", novo ? "ligado" : "desligado");
 }
 
-static void configurarBotao(int pin, gpioISRFunc_t isr) {
+static bool configurarBotao(int pin, gpioAlertFunc_t cb) {
     gpioSetMode(pin, PI_INPUT);
     gpioSetPullUpDown(pin, PI_PUD_UP);   // botao fecha para o GND
     gpioGlitchFilter(pin, GLITCH_US);
-    gpioSetISRFunc(pin, FALLING_EDGE, 0, isr);
+    if (gpioSetAlertFunc(pin, cb) < 0) {
+        std::fprintf(stderr, "ERRO: nao consegui registrar o callback do GPIO %d\n", pin);
+        return false;
+    }
+    return true;
 }
 
 bool initMetronomo() {
@@ -81,11 +89,11 @@ bool initMetronomo() {
 
     gpioServo(PIN_SERVO, SERVO_MID_US);
 
-    configurarBotao(PIN_BOTAO_MAIS,  isrMais);
-    configurarBotao(PIN_BOTAO_MENOS, isrMenos);
-    configurarBotao(PIN_BOTAO_RESET, isrReset);
-    configurarBotao(PIN_BOTAO_SOM,   isrSom);
-    return true;
+    bool ok = configurarBotao(PIN_BOTAO_MAIS,  alertaMais);
+    ok &= configurarBotao(PIN_BOTAO_MENOS, alertaMenos);
+    ok &= configurarBotao(PIN_BOTAO_RESET, alertaReset);
+    ok &= configurarBotao(PIN_BOTAO_SOM,   alertaSom);
+    return ok;
 }
 
 void encerrarMetronomo() {
