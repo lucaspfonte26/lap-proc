@@ -1,4 +1,3 @@
-# drivers/sensor.py
 from gpiozero import DistanceSensor
 
 class SensorDriver:
@@ -12,9 +11,7 @@ class SensorDriver:
         return self.sensor.distance * 100
 
     def is_closed(self):
-        """Verifica se a porta está fisicamente fechada."""
         return self.distance_cm <= self.LIMIAR_PORTA_FECHADA_CM
 
     def close(self):
-        """Libera o pino do sensor no encerramento."""
         self.sensor.close()

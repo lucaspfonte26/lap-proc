@@ -1,17 +1,12 @@
-#!/usr/bin/env python3
-########################################################################
-# Arquivo     : security.py
-# Função      : Tratamento de Hashes Criptográficos e Logica de Cooldown
-########################################################################
+
 import hashlib
 import time
 
 # Hash SHA-256 correspondente à senha padrão "1234"
-# Evita o armazenamento de credenciais em texto plano na memória flash.
 HASH_SENHA_GRAVADA = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
 
 MAX_TENTATIVAS = 3
-TEMPO_COOLDOWN_SEG = 15 # Reduzido para facilitar testes em bancada de laboratório
+TEMPO_COOLDOWN_SEG = 15
 
 tentativas_falhas = 0
 bloqueado_ate = 0

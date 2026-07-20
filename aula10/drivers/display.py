@@ -1,5 +1,8 @@
-# drivers/display.py
-from LCD1602 import CharLCD1602
+try:
+    from ..libs_freenove.LCD1602 import CharLCD1602
+except ImportError:
+    from libs_freenove.LCD1602 import CharLCD1602
+
 
 class DisplayDriver:
     def __init__(self):
@@ -13,7 +16,6 @@ class DisplayDriver:
         return texto.ljust(16)
 
     def atualizar(self, linha0, linha1):
-        """Escreve as duas linhas no display simultaneamente."""
         self.lcd.write(0, 0, self.formatar_linha(linha0))
         self.lcd.write(0, 1, self.formatar_linha(linha1))
 
