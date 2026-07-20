@@ -40,9 +40,6 @@ buzzer_estado = False
 def formatar_linha(texto):
     return texto.ljust(16)
 
-def atualizar_display(linha0, ...):
-    pass # No script real, as linhas de escrita I2C permanecem aqui
-
 def atualizar_display(linha0, linha1):
     lcd.write(0, 0, formatar_linha(linha0))
     lcd.write(0, 1, formatar_linha(linha1))
