@@ -53,10 +53,10 @@ class ElectronicLockController:
             porta_fechada = self.sensor.is_closed()
 
             if not porta_fechada and self.estado_atual not in [
-                LockState.SUCESS,
-                LockState.ALARME,
+                LockState.SUCCESS,
+                LockState.ALARM,
             ]:
-                self.estado_atual = LockState.ALARME
+                self.estado_atual = LockState.ALARM
                 self.display.atualizar("ALERTA VIOLACAO!", "PORTA ARROMBADA!")
                 self.buzzer.play(220.0, 5.0)
 
@@ -72,7 +72,7 @@ class ElectronicLockController:
                 if key != self.keypad.NULL:
                     self.processar_tecla(key)
 
-            elif self.estado_atual in [LockState.SUCESS, LockState.FAILURE]:
+            elif self.estado_atual in [LockState.SUCCESS, LockState.FAILURE]:
                 if agora >= self.tempo_transicao_estado:
                     if security.esta_bloqueado():
                         self.estado_atual = LockState.COOLDOWN
@@ -119,7 +119,7 @@ class ElectronicLockController:
 
         if key == "#":
             if security.verificar_senha(self.senha_buffer):
-                self.estado_atual = LockState.SUCESS
+                self.estado_atual = LockState.SUCCESS
                 self.display.atualizar("ACESSO LIBERADO", "Bem-vindo!")
                 self.buzzer.play(440.0, 0.2)
                 self.tempo_transicao_estado = agora + 3.0
