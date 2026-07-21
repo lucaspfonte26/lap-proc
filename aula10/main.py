@@ -137,3 +137,6 @@ class ElectronicLockController:
             if len(self.senha_buffer) < LIMITE_DIGITOS:
                 self.senha_buffer += key
                 self.exibir_ofuscacao()
+
+if __name__ == "__main__":
+    main()
