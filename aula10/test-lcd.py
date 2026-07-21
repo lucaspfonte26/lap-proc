@@ -5,7 +5,7 @@
 ########################################################################
 import smbus
 from time import sleep
-from LCD1602 import CharLCD1602
+from libs_freenove.LCD1602 import CharLCD1602
 
 # Instancia o objeto do LCD a partir da biblioteca fornecida
 lcd1602 = CharLCD1602()    
